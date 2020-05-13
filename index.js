@@ -39,6 +39,7 @@ export class UpdateAPK {
 
   getApkVersionSuccess = remote => {
     console.log("getApkVersionSuccess", remote);
+    this.options.onVersioningRetrieved && this.options.onVersioningRetrieved(remote)
     // TODO switch this to versionCode
     let outdated = false;
     if (remote.versionCode && (remote.versionCode > RNUpdateAPK.versionCode)) {
@@ -60,7 +61,7 @@ export class UpdateAPK {
           if (isUpdate) {
             this.downloadApk(remote);
           }
-        });
+        }, remote);
       }
     } else if (this.options.notNeedUpdateApp) {
       this.options.notNeedUpdateApp();
@@ -81,7 +82,7 @@ export class UpdateAPK {
     const progressDivider = 1;
     // You must be sure filepaths.xml exposes this path or you will have a FileProvider error API24+
     // You might check {totalSpace, freeSpace} = await RNFS.getFSInfo() to make sure there is room
-    const downloadDestPath = `${RNFS.CachesDirectoryPath}/NewApp.apk`;
+    const downloadDestPath = `${RNFS.CachesDirectoryPath}/app-release.apk`;
 
     const ret = RNFS.downloadFile({
       fromUrl: remote.apkUrl,
