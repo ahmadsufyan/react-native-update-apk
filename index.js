@@ -1,6 +1,7 @@
 "use strict";
 
 import { NativeModules, Platform } from "react-native";
+const RNFS = require("react-native-fs");
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK;
 
@@ -9,6 +10,8 @@ let jobId = -1;
 export class UpdateAPK {
   constructor(options) {
     this.options = options;
+    this.autoInstallOnFinish = this.options.autoInstallOnFinish != undefined ? this.options.autoInstallOnFinish : true
+    this._path = `${RNFS.CachesDirectoryPath}/app-release.apk`
   }
 
   GET = (url, success, error) => {
@@ -69,7 +72,6 @@ export class UpdateAPK {
   };
 
   downloadApk = remote => {
-    const RNFS = require("react-native-fs");
     const progress = data => {
       const percentage = ((100 * data.bytesWritten) / data.contentLength) | 0;
       this.options.downloadApkProgress &&
@@ -82,7 +84,7 @@ export class UpdateAPK {
     const progressDivider = 1;
     // You must be sure filepaths.xml exposes this path or you will have a FileProvider error API24+
     // You might check {totalSpace, freeSpace} = await RNFS.getFSInfo() to make sure there is room
-    const downloadDestPath = `${RNFS.CachesDirectoryPath}/app-release.apk`;
+    const downloadDestPath = this._path;
 
     const ret = RNFS.downloadFile({
       fromUrl: remote.apkUrl,
@@ -121,10 +123,12 @@ export class UpdateAPK {
             // re-throw so we don't attempt to install the APK, this will call the downloadApkError handler
             throw rej;
           });
-        RNUpdateAPK.installApk(
-          downloadDestPath,
-          this.options.fileProviderAuthority
-        );
+          if(this.autoInstallOnFinish){
+            RNUpdateAPK.installApk(
+              downloadDestPath,
+              this.options.fileProviderAuthority
+            );
+          }
 
         jobId = -1;
       })
@@ -133,6 +137,19 @@ export class UpdateAPK {
         jobId = -1;
       });
   };
+
+  goInstallApk = () =>{
+    if(!this.autoInstallOnFinish){
+      try{
+        RNUpdateAPK.installApk(
+          this._path,
+          this.options.fileProviderAuthority
+        );
+      }catch(err){
+        console.log(err)
+      }
+    }
+  }
 
   getAppStoreVersion = () => {
     if (!this.options.iosAppId) {
