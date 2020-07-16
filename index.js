@@ -77,6 +77,7 @@ export class UpdateAPK {
         this.options.downloadApkProgress(percentage, data.contentLength, data.bytesWritten);
     };
     const begin = res => {
+      console.log("RNUpdateAPK::downloadApk - downloadApkStart");
       this.options.downloadApkStart && this.options.downloadApkStart();
     };
     const progressDivider = 1;
@@ -97,6 +98,7 @@ export class UpdateAPK {
 
     ret.promise
       .then(res => {
+        console.log("RNUpdateAPK::downloadApk - downloadApkEnd");
         this.options.downloadApkEnd && this.options.downloadApkEnd(remote);
         RNUpdateAPK.getApkInfo(downloadDestPath)
           .then(res => {
