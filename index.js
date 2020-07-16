@@ -41,6 +41,7 @@ export class UpdateAPK {
   };
 
   getApkVersionSuccess = remote => {
+    console.log("getApkVersionSuccess", remote);
     this.options.onVersioningRetrieved && this.options.onVersioningRetrieved(remote)
     // TODO switch this to versionCode
     let outdated = false;
@@ -55,7 +56,7 @@ export class UpdateAPK {
     if (outdated) {
       if (remote.forceUpdate) {
         if (this.options.forceUpdateApp) {
-          this.options.forceUpdateApp(remote);
+          this.options.forceUpdateApp();
         }
         this.downloadApk(remote);
       } else if (this.options.needUpdateApp) {
@@ -66,7 +67,7 @@ export class UpdateAPK {
         }, remote);
       }
     } else if (this.options.notNeedUpdateApp) {
-      this.options.notNeedUpdateApp(remote);
+      this.options.notNeedUpdateApp();
     }
   };
 
@@ -77,6 +78,7 @@ export class UpdateAPK {
         this.options.downloadApkProgress(percentage, data.contentLength, data.bytesWritten);
     };
     const begin = res => {
+      console.log("RNUpdateAPK::downloadApk - downloadApkStart");
       this.options.downloadApkStart && this.options.downloadApkStart();
     };
     const progressDivider = 1;
@@ -97,7 +99,8 @@ export class UpdateAPK {
 
     ret.promise
       .then(res => {
-        this.options.downloadApkEnd && this.options.downloadApkEnd(remote);
+        console.log("RNUpdateAPK::downloadApk - downloadApkEnd");
+        this.options.downloadApkEnd && this.options.downloadApkEnd();
         RNUpdateAPK.getApkInfo(downloadDestPath)
           .then(res => {
             console.log(
